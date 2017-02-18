@@ -1,0 +1,11 @@
+proc tabulate data=rais(where=(gender='Female')) missing order=freq;
+    class  appr_trade_name appr_trade_code gender comp_vol repyr reg_status ;
+    var            total_cont total_comp total_disc total_na;
+    freq total_reg;
+
+    where reg_status ~= 'NA';
+
+    
+    table repyr*(appr_trade_code)*appr_trade_name, (gender all) * (n*f=comma8.)
+        / box='Q3: Most Female' misstext=' ';
+run;
