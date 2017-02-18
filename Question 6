@@ -1,0 +1,122 @@
+/* Q6 Are gender and age groups equally represented across trade and/or sector*/
+/*Create age group*/
+data rais2;
+	set rais1;
+	if mean_age <= 20 then age_group = "Under 20" ;
+	else if 20 <mean_age < 25 then age_group = "20-24" ;
+	else if 25 <= mean_age < 30  then age_group = "25-29" ;
+	else if 30 <= mean_age < 35 then age_group = "30-34" ;
+	else if 35 <= mean_age < 40 then age_group = "35-39" ;
+	else if 40 <= mean_age < 45 then age_group = "40-44" ;
+	else if 45 <= mean_age < 50 then age_group = "45-49" ; 
+	else if 50 <= mean_age < 100 then age_group = "above 50" ;  
+run;
+/* Q6 trade code with gender with NA */
+proc tabulate data=rais2 missing order=freq;
+    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req;
+    var            total_cont total_comp total_disc total_na;
+    freq total_reg;
+
+    /*where reg_status ~= 'NA';*/
+
+    table (appr_trade_code all)* repyr, (gender all)
+        / box='Q6 Are gender and age groups equally represented across trade and/or sector' misstext=' ';
+run;
+
+/* Q6 trade code with age group with NA*/
+proc tabulate data=rais2 missing order=freq;
+    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req age_group;
+    var            total_cont total_comp total_disc total_na;
+    freq total_reg;
+
+    /*where reg_status ~= 'NA';*/
+
+    table (appr_trade_code all)* repyr, (age_group all)
+        / box='Q6 Are gender and age groups equally represented across trade and/or sector' misstext=' ';
+run;
+
+/* Q6 sector with gender with NA*/
+proc tabulate data=rais2 missing order=freq;
+    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req;
+    var            total_cont total_comp total_disc total_na;
+    freq total_reg;
+
+    /*where reg_status ~= 'NA';*/
+
+    table (appr_sector all) * repyr, (gender all)
+        / box='Q6 Are gender and age groups equally represented across trade and/or sector' misstext=' ';
+run;
+
+/* Q6 sector with age group with NA*/
+proc tabulate data=rais2 missing order=freq;
+    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req age_group;
+    var            total_cont total_comp total_disc total_na;
+    freq total_reg;
+
+    /*where reg_status ~= 'NA';*/
+
+    table (appr_sector all) * repyr, (age_group all)
+        / box='Q6 Are gender and age groups equally represented across trade and/or sector' misstext=" ";
+run;
+
+/* Q6 trade code with gender without NA */
+proc tabulate data=rais2 missing order=freq;
+    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req;
+    var            total_cont total_comp total_disc total_na;
+    freq total_reg;
+
+    where reg_status ~= 'NA';
+
+    table (appr_trade_code all)* repyr, (gender all)
+        / box='Q6 Are gender and age groups equally represented across trade and/or sector' misstext=' ';
+run;
+
+/* Q6 trade code with age group without NA*/
+proc tabulate data=rais2 missing order=freq;
+    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req age_group;
+    var            total_cont total_comp total_disc total_na;
+    freq total_reg;
+
+    where reg_status ~= 'NA';
+
+    table (appr_trade_code all)* repyr, (age_group all)
+        / box='Q6 Are gender and age groups equally represented across trade and/or sector' misstext=' ';
+run;
+
+/* Q6 sector with gender without NA*/
+proc tabulate data=rais2 missing order=freq;
+    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req;
+    var            total_cont total_comp total_disc total_na;
+    freq total_reg;
+
+    where reg_status ~= 'NA';
+
+    table (appr_sector all) * repyr, (gender all)
+        / box='Q6 Are gender and age groups equally represented across trade and/or sector' misstext=' ';
+run;
+
+/* Q6 sector with age group without NA*/
+proc tabulate data=rais2 missing order=freq;
+    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req age_group;
+    var            total_cont total_comp total_disc total_na;
+    freq total_reg;
+
+    where reg_status ~= 'NA';
+
+    table (appr_sector all) * repyr, (age_group all)
+        / box='Q6 Are gender and age groups equally represented across trade and/or sector' misstext=" ";
+run;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
