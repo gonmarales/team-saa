@@ -1,0 +1,21 @@
+/*  Q8:  Wage variation   */
+proc tabulate data=rais2015 missing;
+    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req;
+    var              total_cont total_comp total_disc total_na wage_2015;
+    freq total_reg;
+
+
+    table (appr_sector all), (gender all) *(n*f=comma8. wage_2015*mean*f=8.2)
+        / box='Q8:  Wage variation with NA';
+run;
+
+proc tabulate data=rais2015 missing;
+    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req;
+    var              total_cont total_comp total_disc total_na wage_2015;
+    freq total_reg;
+
+    where reg_status ~= 'NA';
+
+    table (appr_sector all), (gender all) *(n*f=comma8. wage_2015*mean*f=8.2)
+        / box='Q8:  Wage variation without NA';
+run;
