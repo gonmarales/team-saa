@@ -1,5 +1,4 @@
-
-/*  What trade has the most women registered? (without N/A)   */
+/*  Q3:  What trade has the most women registered? (without NA)  */
 
 proc tabulate data=rais(where=(gender='Female')) missing order=freq;
     class  appr_trade_name appr_trade_code gender comp_vol repyr reg_status ;
@@ -10,11 +9,12 @@ proc tabulate data=rais(where=(gender='Female')) missing order=freq;
 
     
     table repyr*(appr_trade_code)*appr_trade_name, (gender all) * (n*f=comma8.)
-        / box='Q3: Most Female' misstext=' ';
+        / box='Q3: Most Female without NA' misstext=' ';
 run;
 
+/*  Q3:  What trade has the most women registered? (with NA)  */
 
-/*  What trade has the most women registered? (with N/A)   */
+
 
 proc tabulate data=rais(where=(gender='Female')) missing order=freq;
     class  appr_trade_name appr_trade_code gender comp_vol repyr reg_status ;
@@ -22,5 +22,5 @@ proc tabulate data=rais(where=(gender='Female')) missing order=freq;
     freq total_reg;
     
     table repyr*(appr_trade_code)*appr_trade_name, (gender all) * (n*f=comma8.)
-        / box='Q3: Most Female' misstext=' ';
+        / box='Q3: Most Female with NA' misstext=' ';
 run;
