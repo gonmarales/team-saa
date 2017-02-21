@@ -10,7 +10,7 @@
 /*  1. Import CSV into SAS dataset                  */
 /*--------------------------------------------------*/
 
-FILENAME REFFILE 'D:/Seneca College/Winter 2017/ZLAS Hackathon/[ZLAS]_SAS_Big_Data_Hackathon__Problem_+_Datasets_+_Instructions/SAS Hack Competition/JVWS_untidy_dataset.csv';
+FILENAME REFFILE "&apprdir/Source/JVWS_untidy_dataset.csv";
 
 PROC IMPORT DATAFILE=REFFILE
     DBMS=CSV
@@ -19,19 +19,18 @@ PROC IMPORT DATAFILE=REFFILE
     GUESSINGROWS=200;
 RUN;
 
-/*--------------------------------------------------*/
-/*  2. Check non-numerics in the mean_value field   */
-/*--------------------------------------------------*/
+/*------------------------------------------------------*/
+/*  2. Check non-numerics in the mean_value field       */
+/*------------------------------------------------------*/
 
 proc freq data=jvws_raw;
     where not anydigit(substr(mean_value,1,1));
     table mean_value;
 run;
 
-/*--------------------------------------------------*/
-/*  3. Convert non-numerics to special missing      */
-/*     Prepare for transpose                        */
-/*--------------------------------------------------*/
+/*------------------------------------------------------*/
+/*  3. Convert non-numerics to special missing          */
+/*------------------------------------------------------*/
 
 data jvws_clean;
     length varname $ 32;
@@ -45,47 +44,81 @@ data jvws_clean;
     else if fchar = 'x' then mean_value = .x ;
     else                     mean_value = input( mean_str, best32. );
 
+    drop mean_str;
+run;
+
+proc sort;
+    by noc_code repyr;
+run;
+
+/*------------------------------------------------------*/
+/*  4. Create jvws1: noc, yearly metrics as variables   */
+/*------------------------------------------------------*/
+
+*--- create variable name ---;
+data temp1;
+    length varname $ 32;
+    
+    set jvws_clean;
+    
+    
     if      statistic =: 'Average offered hourly wage' then varname = 'wage';
     else if statistic =: 'Job vacancies'               then varname = 'vacancy';
     
     if      repyr = 2015 then varname = cats( varname, '_2015' );
     else if repyr = 2016 then varname = cats( varname, '_2016' );
-
-    drop mean_str;
 run;
 
-proc means data=jvws_clean n nmiss mean std;
-    var mean_value;
-run;
-
-proc sort data=jvws_clean;
-    by noc_code varname;
-run;
-
-/*--------------------------------------------------*/
-/*  4. Transpose to final structure:                */
-/*     each noc_code one row, 4 values              */
-/*--------------------------------------------------*/
-
-proc transpose data=jvws_clean(keep=noc_code varname mean_value)
-    out=jvws;
+*--- transpose metrics column into row ---;
+proc transpose data=temp1(keep=noc_code varname mean_value)
+    out=appr.jvws1(drop=_name_);
     by noc_code;
     id varname;
     var mean_value;
 run;
 
+/*------------------------------------------------------*/
+/*  5. Create jvws2: noc by year, metrics as variables  */
+/*------------------------------------------------------*/
+
+*--- create variable name ---;
+data temp1;
+    length varname $ 32;
+    
+    set jvws_clean;
+    
+    if      statistic =: 'Average offered hourly wage' then varname = 'wage';
+    else if statistic =: 'Job vacancies'               then varname = 'vacancy';
+run;
+
+*--- transpose metrics column into row ---;
+proc transpose data=temp1(keep=noc_code repyr varname mean_value)
+    out=appr.jvws2(drop=_name_);
+    by noc_code repyr;
+    id varname;
+    var mean_value;
+run;
+
+
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+/*  this is all to illustrate, remove from final    */
+
 *--- counting is easier ---;
-proc freq data=jvws;
+proc freq data=appr.jvws1;
     table wage_2016 / missing;
 run;
 
 *--- arithmetic unaffected ---;
-proc means data=jvws n nmiss mean std;
+proc means data=appr.jvws1 n nmiss mean std;
     var wage_2016;
 run;
 
+*--- easier grouped summary ---;
 proc format;
     value wage
         .d = 'M1'
@@ -105,7 +138,7 @@ proc format;
     ;
 run;
 
-proc summary data=jvws missing nway;
+proc summary data=appr.jvws1 missing nway;
     class wage_2016; format wage_2016 wage. ;
     output out=cnt;
 run;
@@ -113,14 +146,21 @@ run;
 proc print data=cnt;
 run;
 
-proc sgplot data=jvws;
+*--- sgplot doesn not like multiple missing ---;
+proc sgplot data=appr.jvws1;
     hbar wage_2016 / datalabel ;
     format wage_2016 wage. ; 
-    *yaxis type=discrete;   
 run;
 
-proc sgplot data=jvws;
-    hbar wage_2016 / datalabel missing;
-    format wage_2016 wage. ; 
-    *yaxis type=discrete;   
+*--- can interject data step to solve problem ---;
+
+data cnt1;
+    set cnt;
+    cat = put( wage_2016, wage. );
 run;
+
+proc sgplot data=cnt1;
+    hbar cat / response=_freq_ datalabel;
+    label cat='Wage Category';
+run;
+
