@@ -1,23 +1,23 @@
 /*  Q4:  Most popular without NA  */
-proc tabulate data=rais1 missing order=freq;
-    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req;
+proc tabulate data=rais2015 missing order=freq;
+    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req_str;
     var            total_cont total_comp total_disc total_na;
     freq total_reg;
 
     where reg_status ~= 'NA';
 
     table (appr_trade_code all)* repyr, (n*f=comma8.)
-        / box='Q4: Most popular' misstext=' ';
+        / box='Q4: Most popular without NA' misstext=' ';
 run;
 
 /*  Q4:  Most popular with NA  */
-proc tabulate data=rais1 missing order=freq;
-    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req;
+proc tabulate data=rais2015 missing order=freq;
+    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req_str;
     var            total_cont total_comp total_disc total_na;
     freq total_reg;
 
     /*where reg_status ~= 'NA';*/
 
     table (appr_trade_code all)* repyr, (n*f=comma8.)
-        / box='Q4: Most popular' misstext=' ';
+        / box='Q4: Most popular with NA' misstext=' ';
 run;
