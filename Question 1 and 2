@@ -1,7 +1,6 @@
-
 /*  Q1:  How many apprentices without NA  */
-proc tabulate data=rais1 missing;
-    class appr_sector appr_trade_code gender comp_vol repyr reg_status acad_entry_req;
+proc tabulate data=rais2015 missing;
+    class appr_sector appr_trade_code gender comp_vol repyr reg_status acad_entry_req_str;
     var total_reg total_cont total_comp total_disc total_na;
 	  where reg_status ~= 'NA';
     table repyr, (reg_status all) * total_reg *sum*f=comma10.
@@ -11,8 +10,19 @@ proc tabulate data=rais1 missing;
         / box='Q1: How many apprentices' misstext=' ';
 run;
 
+/*  Q1:  How many apprentices with NA  */
+proc tabulate data=rais2015 missing;
+    class appr_sector appr_trade_code gender comp_vol repyr reg_status acad_entry_req_str;
+    var total_reg total_cont total_comp total_disc total_na;
+    table repyr, (reg_status all) * total_reg *sum*f=comma10.
+        / box='Q1: How many apprentices' misstext=' ';
+
+    table repyr * (appr_sector all), (reg_status all) * total_reg *sum*f=comma10.
+        / box='Q1: How many apprentices' misstext=' ';
+run;
+
 /*  Q2:  How old  without NA */
-proc tabulate data=rais1 missing;
+proc tabulate data=rais2015 missing;
     class appr_sector appr_trade_code gender comp_vol repyr reg_status acad_entry_req;
     var            total_cont total_comp total_disc total_na mean_age;
     freq total_reg;
@@ -24,19 +34,9 @@ proc tabulate data=rais1 missing;
         / box='Q2: How old' misstext=' ';
 run;
 
-/*  Q1:  How many apprentices with NA  */
-proc tabulate data=rais1 missing;
-    class appr_sector appr_trade_code gender comp_vol repyr reg_status acad_entry_req;
-    var total_reg total_cont total_comp total_disc total_na;
-    table repyr, (reg_status all) * total_reg *sum*f=comma10.
-        / box='Q1: How many apprentices' misstext=' ';
-
-    table repyr * (appr_sector all), (reg_status all) * total_reg *sum*f=comma10.
-        / box='Q1: How many apprentices' misstext=' ';
-run;
 
 /*  Q2:  How old with NA  */
-proc tabulate data=rais1 missing;
+proc tabulate data=rais2015 missing;
     class appr_sector appr_trade_code gender comp_vol repyr reg_status acad_entry_req;
     var            total_cont total_comp total_disc total_na mean_age;
     freq total_reg;
