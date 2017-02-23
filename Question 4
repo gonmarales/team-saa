@@ -1,23 +1,18 @@
-/*  Q4:  Most popular without NA  */
-proc tabulate data=rais2015 missing order=freq;
-    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req_str;
+/*  Q3:  What trade has the most women registered? (without NA)  */
+proc tabulate data=rais2015(where=(gender='Female')) missing order=freq;
+    class  appr_trade_name appr_trade_code gender comp_vol repyr reg_status ;
     var            total_cont total_comp total_disc total_na;
     freq total_reg;
-
-    where reg_status ~= 'NA';
-
-    table (appr_trade_code all)* repyr, (n*f=comma8.)
-        / box='Q4: Most popular without NA' misstext=' ';
+    where reg_status ~= 'NA';    
+    table repyr*(appr_trade_code)*appr_trade_name, (gender all) * (n*f=comma8.)
+        / box='Q3: Most Female without NA' misstext=' ';
 run;
 
-/*  Q4:  Most popular with NA  */
-proc tabulate data=rais2015 missing order=freq;
-    class appr_sector appr_trade_name appr_trade_code gender comp_vol repyr reg_status acad_entry_req_str;
+/*  Q3:  What trade has the most women registered? (with NA)  */
+proc tabulate data=rais2015(where=(gender='Female')) missing order=freq;
+    class  appr_trade_name appr_trade_code gender comp_vol repyr reg_status ;
     var            total_cont total_comp total_disc total_na;
-    freq total_reg;
-
-    /*where reg_status ~= 'NA';*/
-
-    table (appr_trade_code all)* repyr, (n*f=comma8.)
-        / box='Q4: Most popular with NA' misstext=' ';
+    freq total_reg;   
+    table repyr*(appr_trade_code)*appr_trade_name, (gender all) * (n*f=comma8.)
+        / box='Q3: Most Female with NA' misstext=' ';
 run;
