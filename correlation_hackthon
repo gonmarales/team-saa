@@ -1,0 +1,148 @@
+/* merge rais 2015 to Appr_OD_dataset*/
+
+FILENAME REFFILE 'C:/Users/sophia/Desktop/hackthon/SAS Hack Competition/Appr_OD_dataset.csv';
+
+PROC IMPORT DATAFILE=REFFILE DBMS=CSV REPLACE OUT=Appr_OD_dataset;
+    GETNAMES=YES;
+    GUESSINGROWS=4000;
+RUN;
+
+data rais2015;
+    merge rais1(in=in_rais where=(repyr=2015)) jvws1(in=in_jvws) end=eof;
+    by noc_code;
+
+    if      in_rais=1 and in_jvws=0 and first.noc_code then put 'No jvws  ' noc_code;
+    else if in_rais=0 and in_jvws=1 and first.noc_code then put 'No Rais  ' noc_code;
+
+    if in_rais then output;
+run;
+
+proc export data=rais2015 dbms=xlsx 
+outfile='C:\Users\sophia\Desktop\hackthon\rais2015' replace;
+run;
+
+/*****************************************************************/
+/*check is there any relation between wage(num) and tax credit(categorical)*/
+/*****************************************************************/
+ods noproctitle;
+ods graphics / imagemap=on;
+
+/*** Test for normality ***/
+proc univariate data=WORK.RAIS2015 normal mu0=0;
+	ods select TestsForNormality;
+	class tax_train_cred;
+	var wage_2015;
+run;
+
+/*** t Test ***/
+proc ttest data=WORK.RAIS2015 sides=2 h0=0 plots(showh0);
+	class tax_train_cred;
+	var wage_2015;
+run;
+
+/*************************************************/
+/* check the correlation between gender(categorical) and wage(numeric)*/
+/*************************************************/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+/*** Test for normality ***/
+proc univariate data=WORK.RAIS2015 normal mu0=0;
+	ods select TestsForNormality;
+	class gender;
+	var wage_2015;
+run;
+
+/*** t Test ***/
+proc ttest data=WORK.RAIS2015 sides=2 h0=0 plots(showh0);
+	class gender;
+	var wage_2015;
+run;
+
+/*****************************************************/
+/* check correlation between compulcory(categorical) and sectors(categorical)*/
+/*****************************************************/
+
+Proc freq data=rais2015;
+table appr_sector * comp_vol/plcorr;
+run;
+
+/*****************************************************/
+/* check correlation between sector(categorical) and vacancy(number)*/
+/*****************************************************/
+/*Proc corr data= rais2015(where=(vacanvy_2015~=.x .f )) pearson polyserial;
+with appr_sector;
+var vacancy_2015;
+run;*/
+
+/*****************************************************************/
+/* check correlation between red_seal(categorical) and wage(numeric)*/
+/*****************************************************************/
+
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+/*** Test for normality ***/
+proc univariate data=WORK.RAIS2015 normal mu0=0;
+	ods select TestsForNormality;
+	class ;
+	var wage_2015;
+run;
+
+/*** t Test ***/
+proc ttest data=WORK.RAIS2015 sides=2 h0=0 plots(showh0);
+	class gender;
+	var wage_2015;
+run;
+
+/***********************************************************/
+/* check complete rate with wage on red_seal yes and red_seal no*/
+/************************************************************/
+data rais2015f;
+	set rais2015;
+	if wage_2015 = '0' then wage_bin = 'No wage';
+ 	else if wage_2015 > 11 and wage_2015 <= 15 then wage_bin = '11-15';
+ 	else if wage_2015 > 15 and wage_2015 <= 20 then wage_bin = '15-20';
+ 	else if wage_2015 > 20 and wage_2015 <= 25 then wage_bin = '20-25';
+ 	else if wage_2015 > 25 and wage_2015 <= 30 then wage_bin = '25-30';
+ 	else wage_bin = 'Above 30';
+run;
+
+Title;
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc glm data=WORK.RAIS2015f(where=(red_seal='Y'));
+	class wage_bin;
+	model comp_rate=wage_bin;
+	means wage_bin / hovtest=levene welch plots=none;
+	lsmeans wage_bin / adjust=tukey pdiff alpha=.05;
+	run;
+quit;
+
+Title;
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc glm data=WORK.RAIS2015f(where=(red_seal='N'));
+	class wage_bin;
+	model comp_rate=wage_bin;
+	means wage_bin / hovtest=levene welch plots=none;
+	lsmeans wage_bin / adjust=tukey pdiff alpha=.05;
+	run;
+quit;
+
+/********************************************************/
+/* check whether mean_dur is significant or not        **/
+/*********************************************************/
+
+ods noproctitle;
+ods graphics / imagemap=on;
+
+proc reg data=WORK.RAIS2015F alpha=0.05 plots(only)=(diagnostics residuals 
+		fitplot observedbypredicted);
+	model comp_rate=mean_reg_dur /;
+	run;
+quit;
