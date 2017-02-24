@@ -1,0 +1,26 @@
+/*delete the obervations with 'NA' reg_status, and also delete
+ the oberservations who has missing value on total_disc,total_comp*/
+data rais_reg;
+	set rais;
+	where total_cont ~= .x and reg_status ~='NA' ;
+run;
+
+
+/* create new table aggregate data together,but delte the st_age,
+ and all mean value are calculated by weighted average*/
+proc sql;
+	create table rais_s as
+	select min(repyr) as repyrs, min(appr_trade_code) as appr_trade_code,min(appr_trade_name) as appr_trade_name,sum(mean_age*total_reg)/sum(total_reg) as mean_age,sum(total_reg) as total_reg, 
+		   sum(total_NA)as total_NA,sum( total_cont)as total_cont,sum( total_comp)as total_comp,sum( total_disc)as total_disc, 
+		   sum(mean_reg_dur*total_reg)/sum(total_reg)as mean_reg_dur,sum(mean_date_reg*total_reg)/sum(total_reg)as mean_date_reg ,
+		   min(gender) as gender,min(comp_vol) as comp_vol
+	from rais_reg
+	group by appr_trade_code,repyr,gender;
+quit;
+
+/*raw calculate complete rate*/
+data rais_f;
+	set rais_s;
+	comp_rate = total_comp/total_reg;
+run;
+
